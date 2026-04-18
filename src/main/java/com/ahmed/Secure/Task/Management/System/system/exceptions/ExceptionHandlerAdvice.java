@@ -1,0 +1,79 @@
+package com.ahmed.Secure.Task.Management.System.system.exceptions;
+
+import com.ahmed.Secure.Task.Management.System.system.Response;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AccountStatusException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@RestControllerAdvice
+public class ExceptionHandlerAdvice {
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    Response<?> handleMethodArgumentNoValidException (MethodArgumentNotValidException exception) {
+        Map<String, Object> errorsResult = new HashMap<>();
+
+        List<ObjectError> errors = exception.getBindingResult().getAllErrors();
+        errors.forEach(error -> {
+            String value = error.getDefaultMessage();
+            String key = ((FieldError) error).getField();
+            errorsResult.put(key, value);
+        });
+
+        return Response
+                .builder()
+                .flag(false)
+                .code(HttpStatus.BAD_REQUEST.value())
+                .message("Invalid input check data")
+                .data(errors)
+                .build();
+
+    }
+
+    @ExceptionHandler({UsernameNotFoundException.class, BadCredentialsException.class})
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    Response<?> handleUsernameNotFoundException (Exception exception) {
+        return Response.builder()
+                .code(HttpStatus.UNAUTHORIZED.value())
+                .flag(false)
+                .message("username or password is wrong")
+                .data(null)
+                .build();
+    }
+
+
+    @ExceptionHandler(AccountStatusException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    Response<?> handleAccountStatusException (AccountStatusException exception) {
+        return Response.builder()
+                .code(HttpStatus.UNAUTHORIZED.value())
+                .flag(false)
+                .message("Account is not active")
+                .data(null)
+                .build();
+    }
+
+    // to catch unhandled exceptions
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    Response<?> handleException (Exception exception) {
+        return Response.builder()
+                .flag(false)
+                .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .message("Internal server error")
+                .data(exception.getCause().getMessage())
+                .build();
+    }
+
+}
