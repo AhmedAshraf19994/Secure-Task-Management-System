@@ -2,9 +2,12 @@ package com.ahmed.Secure.Task.Management.System.system.exceptions;
 
 import com.ahmed.Secure.Task.Management.System.system.Response;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -64,6 +67,39 @@ public class ExceptionHandlerAdvice {
                 .build();
     }
 
+    @ExceptionHandler(InsufficientAuthenticationException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    Response<?> handleInsufficientAuthenticationException (InsufficientAuthenticationException exception) {
+            return Response.builder()
+                    .flag(true)
+                    .code(HttpStatus.UNAUTHORIZED.value())
+                    .data(null)
+                    .message("please login")
+                    .build();
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    Response<?> handleAccessDeniedException (AccessDeniedException exception) {
+            return Response.builder()
+                    .flag(true)
+                    .code(HttpStatus.FORBIDDEN.value())
+                    .data(null)
+                    .message("no permission")
+                    .build();
+    }
+
+    @ExceptionHandler(InvalidBearerTokenException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    Response<?> handleInvalidBearerTokenException (InvalidBearerTokenException exception) {
+            return Response.builder()
+                    .flag(true)
+                    .code(HttpStatus.UNAUTHORIZED.value())
+                    .data(null)
+                    .message("Invalid token")
+                    .build();
+    }
+
     // to catch unhandled exceptions
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -75,5 +111,7 @@ public class ExceptionHandlerAdvice {
                 .data(exception.getCause().getMessage())
                 .build();
     }
+
+
 
 }

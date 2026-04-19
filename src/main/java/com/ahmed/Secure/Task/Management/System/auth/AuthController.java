@@ -3,9 +3,11 @@ package com.ahmed.Secure.Task.Management.System.auth;
 import com.ahmed.Secure.Task.Management.System.auth.dto.LoginRequestDto;
 import com.ahmed.Secure.Task.Management.System.system.Response;
 import com.ahmed.Secure.Task.Management.System.user.Dto.CreateUserDto;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -40,7 +42,26 @@ public class AuthController {
                 .data(accessToken)
                 .message("Login Success")
                 .build();
+    }
 
+    @PostMapping("/logout")
+    public Response<?> logout (HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if(authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new InsufficientAuthenticationException("missing header authorization");
+        }
+        String accessToken = authHeader.substring(7);
+
+
+        String message = this.authService.logout(accessToken);
+
+        return Response
+                .builder()
+                .flag(true)
+                .code(HttpStatus.OK.value())
+                .data(null)
+                .message(message)
+                .build();
     }
 
 

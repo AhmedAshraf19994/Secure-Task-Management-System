@@ -1,5 +1,6 @@
 package com.ahmed.Secure.Task.Management.System.auth;
 
+import com.ahmed.Secure.Task.Management.System.client.jwtTokenCacheService.JwtTokenCacheService;
 import com.ahmed.Secure.Task.Management.System.user.Dto.CreateUserDto;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -28,6 +29,9 @@ class AuthControllerTest {
 
     @MockitoBean
     AuthService authService;
+
+    @MockitoBean
+    JwtTokenCacheService jwtTokenCacheService;
 
 
     @Value("${api.endpoint.base-url}/auth")
