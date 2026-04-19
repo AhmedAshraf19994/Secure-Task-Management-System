@@ -2,14 +2,19 @@ package com.ahmed.Secure.Task.Management.System.auth;
 
 import com.ahmed.Secure.Task.Management.System.auth.dto.LoginRequestDto;
 import com.ahmed.Secure.Task.Management.System.user.Dto.CreateUserDto;
+import com.redis.testcontainers.RedisContainer;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 import tools.jackson.databind.ObjectMapper;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -20,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @SpringBootTest
 @ActiveProfiles("dev")
+@Testcontainers
 public class AuthControllerIntegrationTest {
 
     @Autowired
@@ -30,6 +36,10 @@ public class AuthControllerIntegrationTest {
 
     @Value("${api.endpoint.base-url}")
     private String base_url;
+
+    @Container
+    @ServiceConnection
+    static RedisContainer redisContainer = new RedisContainer(DockerImageName.parse("redis:6.2.6"));;
 
     @Test
     void shouldRegisterUserSuccess () throws Exception {
@@ -115,7 +125,9 @@ public class AuthControllerIntegrationTest {
                 .andExpect(jsonPath("$.code").value(401))
                 .andExpect(jsonPath("$.data").isEmpty())
                 .andExpect(jsonPath("$.message").value("username or password is wrong"));
-    } @Test
+    }
+
+    @Test
     void shouldLoginUserFailWithAccountIsNotActive () throws Exception {
         //given
         LoginRequestDto loginRequestDto = new LoginRequestDto("sara@mail.com","678910");
@@ -130,5 +142,17 @@ public class AuthControllerIntegrationTest {
                 .andExpect(jsonPath("$.code").value(401))
                 .andExpect(jsonPath("$.data").isEmpty())
                 .andExpect(jsonPath("$.message").value("Account is not active"));
+    }
+
+    @Test
+    void shouldRequestFailWithInvalidToken () throws Exception {
+        //given
+        String token = "Bearer invalidToken";
+
+        //when then
+        this.mockMvc.perform(post(base_url + "/auth/logout")
+                .header("Authorization", token)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
     }
 }
