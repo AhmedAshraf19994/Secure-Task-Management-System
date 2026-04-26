@@ -46,7 +46,7 @@ public class ExceptionHandlerAdvice {
 
     @ExceptionHandler({UsernameNotFoundException.class, BadCredentialsException.class})
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    Response<?> handleUsernameNotFoundException (Exception exception) {
+    Response<?> handleUsernameNotFoundExceptionAndBadCredentialsException (Exception exception) {
         return Response.builder()
                 .code(HttpStatus.UNAUTHORIZED.value())
                 .flag(false)
@@ -109,6 +109,18 @@ public class ExceptionHandlerAdvice {
                 .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .message("Internal server error")
                 .data(exception.getCause().getMessage())
+                .build();
+    }
+
+    @ExceptionHandler(ObjectNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    Response<?> handleObjectNotFoundException (ObjectNotFoundException exception) {
+        return Response
+                .builder()
+                .flag(false)
+                .code(HttpStatus.NOT_FOUND.value())
+                .message(exception.getMessage())
+                .data(null)
                 .build();
     }
 

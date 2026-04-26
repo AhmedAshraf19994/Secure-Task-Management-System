@@ -1,0 +1,88 @@
+package com.ahmed.Secure.Task.Management.System.task;
+
+import com.ahmed.Secure.Task.Management.System.system.Response;
+import com.ahmed.Secure.Task.Management.System.task.dto.CreateTaskDto;
+import com.ahmed.Secure.Task.Management.System.task.dto.TaskResponseDto;
+import com.ahmed.Secure.Task.Management.System.task.dto.UpdateTaskDto;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("${api.endpoint.base-url}/tasks")
+public class TaskController {
+
+    private final TaskService taskService;
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public Response<TaskResponseDto> createTask (@Valid @RequestBody CreateTaskDto createTaskDto) {
+        TaskResponseDto task = this.taskService.createTask(createTaskDto);
+
+        return Response
+                .<TaskResponseDto> builder()
+                .flag(true)
+                .code(HttpStatus.CREATED.value())
+                .message("Create Task Success")
+                .data(task)
+                .build();
+    }
+
+    @GetMapping("/{taskId}")
+    Response<TaskResponseDto> getTask (@PathVariable("taskId") int taskId) {
+        TaskResponseDto task = this.taskService.getTask(taskId);
+
+        return Response
+                .<TaskResponseDto> builder()
+                .flag(true)
+                .code(HttpStatus.OK.value())
+                .message("Get Task Success")
+                .data(task)
+                .build();
+    }
+
+    @GetMapping
+    Response<List<TaskResponseDto>> getAllTasks () {
+        List<TaskResponseDto> tasks = this.taskService.getAllTasks();
+
+        return Response
+                .<List<TaskResponseDto>> builder()
+                .flag(true)
+                .code(HttpStatus.OK.value())
+                .message("Get All Tasks Success")
+                .data(tasks)
+                .build();
+    }
+
+    @PutMapping("/{taskId}")
+    public Response<TaskResponseDto> updateTask (
+            @PathVariable("taskId") int taskId
+            , @RequestBody UpdateTaskDto updateTaskDto
+            ) {
+        TaskResponseDto task = this.taskService.updateTask(updateTaskDto, taskId);
+
+        return Response.
+                <TaskResponseDto>builder()
+                .flag(true)
+                .code(HttpStatus.OK.value())
+                .message("Update Task Success")
+                .data(task)
+                .build();
+    }
+
+    @DeleteMapping("/{taskId}")
+    public Response<?> deleteTask (@PathVariable("taskId") int taskId) {
+        this.taskService.deleteTask(taskId);
+        return Response
+                .builder()
+                .flag(true)
+                .code(HttpStatus.OK.value())
+                .data(null)
+                .message("Delete Task Success")
+                .build();
+    }
+}
