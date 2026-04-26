@@ -1,6 +1,7 @@
 package com.ahmed.Secure.Task.Management.System.auth;
 
 import com.ahmed.Secure.Task.Management.System.client.jwtTokenCacheService.JwtTokenCacheService;
+import com.ahmed.Secure.Task.Management.System.config.ApplicationAuditAware;
 import com.ahmed.Secure.Task.Management.System.user.Dto.CreateUserDto;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -18,7 +19,7 @@ import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
-@WebMvcTest
+@WebMvcTest(AuthController.class)
 class AuthControllerTest {
 
     @Autowired
@@ -26,6 +27,7 @@ class AuthControllerTest {
 
     @Autowired
     ObjectMapper objectMapper;
+
 
     @MockitoBean
     AuthService authService;
