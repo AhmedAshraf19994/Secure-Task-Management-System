@@ -1,5 +1,6 @@
 package com.ahmed.Secure.Task.Management.System.task;
 
+import com.ahmed.Secure.Task.Management.System.security.CurrentUserService;
 import com.ahmed.Secure.Task.Management.System.system.exceptions.ObjectNotFoundException;
 import com.ahmed.Secure.Task.Management.System.task.dto.CreateTaskDto;
 import com.ahmed.Secure.Task.Management.System.task.dto.TaskResponseDto;
@@ -8,8 +9,8 @@ import com.ahmed.Secure.Task.Management.System.user.User;
 import com.ahmed.Secure.Task.Management.System.user.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,6 +26,8 @@ public class TaskService {
     private final TaskMapper taskMapper;
 
     private final UserRepository userRepository;
+
+    private final CurrentUserService currentUserService;
 
 
     public TaskResponseDto createTask (CreateTaskDto createTaskDto) {
@@ -69,5 +72,31 @@ public class TaskService {
                 () -> new ObjectNotFoundException("task", taskId)
         );
         this.taskRepository.delete(task);
+    }
+
+    public TaskResponseDto assignTask (int taskId, int assigneeId) throws AccessDeniedException {
+        //fetch the task
+        Task task = this.taskRepository.findById(taskId)
+                .orElseThrow(() -> new ObjectNotFoundException("task", taskId));
+
+        //prevent reassigning to the same user
+        if(task.getAssignedTo() != null && task.getAssignedTo().getId() == assigneeId) {
+            return this.taskMapper.toTaskResponseDto(task);
+        }
+
+        //authorize only task owner or admin can do that
+        // manual check could have used preAuthorize but don't want to hit the  database twice for task retrieval
+        if(!this.currentUserService.hasAuthority(task.getCreatedBy().getId())) {
+            throw new AccessDeniedException("no permission");
+        }
+
+        //fetch the assigne user
+        User userTobeAssignedTo = this.userRepository.findById(assigneeId)
+                .orElseThrow(() -> new ObjectNotFoundException("user", assigneeId));
+
+        // doing the reassign
+        task.setAssignedTo(userTobeAssignedTo);
+
+        return this.taskMapper.toTaskResponseDto(task);
     }
 }

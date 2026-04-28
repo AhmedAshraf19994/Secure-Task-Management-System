@@ -82,7 +82,7 @@ public class ExceptionHandlerAdvice {
     @ResponseStatus(HttpStatus.FORBIDDEN)
     Response<?> handleAccessDeniedException (AccessDeniedException exception) {
             return Response.builder()
-                    .flag(true)
+                    .flag(false)
                     .code(HttpStatus.FORBIDDEN.value())
                     .data(null)
                     .message("no permission")
