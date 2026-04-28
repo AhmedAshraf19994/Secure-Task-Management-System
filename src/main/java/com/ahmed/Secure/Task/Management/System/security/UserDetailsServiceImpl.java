@@ -1,4 +1,4 @@
-package com.ahmed.Secure.Task.Management.System.Security;
+package com.ahmed.Secure.Task.Management.System.security;
 
 import com.ahmed.Secure.Task.Management.System.user.MyUserPrinciple;
 import com.ahmed.Secure.Task.Management.System.user.UserRepository;

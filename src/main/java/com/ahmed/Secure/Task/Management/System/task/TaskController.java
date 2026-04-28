@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @RestController
@@ -83,6 +84,22 @@ public class TaskController {
                 .code(HttpStatus.OK.value())
                 .data(null)
                 .message("Delete Task Success")
+                .build();
+    }
+
+    @PatchMapping("/{taskId}/assign/{assigneeId}")
+    public Response<TaskResponseDto> assignTask (
+            @PathVariable("taskId") int taskId,
+             @PathVariable("assigneeId") int assigneeId
+    ) throws AccessDeniedException {
+        TaskResponseDto task = this.taskService.assignTask(taskId, assigneeId);
+
+        return Response.
+                <TaskResponseDto>builder()
+                .flag(true)
+                .code(HttpStatus.OK.value())
+                .message("Assign Task Success")
+                .data(task)
                 .build();
     }
 }

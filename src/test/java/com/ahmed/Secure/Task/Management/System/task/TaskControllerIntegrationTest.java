@@ -318,8 +318,132 @@ public class TaskControllerIntegrationTest {
                 .andExpect(jsonPath("$.data").isEmpty());
     }
 
+    @Test
+    void shouldAssignTaskSuccess () throws Exception {
+        //given
+        int taskId = 3 ;
+        int assigneeId= 2;
 
-    
+        //when then
+        this.mockMvc.perform(patch(base_url + "/tasks/{taskId}/assign/{assigneeId}", taskId, assigneeId)
+                .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization",this.accessToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.message").value("Assign Task Success"))
+                .andExpect(jsonPath("$.data.id").value(3))
+                .andExpect(jsonPath("$.data.assignedTo.id").value(2));
+    }
+
+    @Test
+    void shouldAssignTaskWithWithAdminAuthoritySuccess () throws Exception { //given
+        int taskId = 2 ;
+        int assigneeId= 1;
+
+        //when then
+        this.mockMvc.perform(patch(base_url + "/tasks/{taskId}/assign/{assigneeId}", taskId, assigneeId)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization",this.accessToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.message").value("Assign Task Success"))
+                .andExpect(jsonPath("$.data.id").value(2))
+                .andExpect(jsonPath("$.data.assignedTo.id").value(1));
+
+    }
+
+    @Test
+    void shouldAssignTaskWithTaskOwnerAuthoritySuccess () throws Exception {
+        //login with user with id 2
+        loginWithUserAuthority();
+
+        //given
+        int taskId = 1 ;
+        int assigneeId= 3;
+
+        //when then
+        this.mockMvc.perform(patch(base_url + "/tasks/{taskId}/assign/{assigneeId}", taskId, assigneeId)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization",this.accessToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.message").value("Assign Task Success"))
+                .andExpect(jsonPath("$.data.id").value(1))
+                .andExpect(jsonPath("$.data.assignedTo.id").value(3));
+    }
+
+    @Test
+    void shouldAssignTaskWithWithNotTaskOwnerAuthorityFail () throws Exception {
+        //login with user with id 2
+        loginWithUserAuthority();
+
+        //given
+        int taskId = 3 ;
+        int assigneeId= 3;
+
+        //when then
+        this.mockMvc.perform(patch(base_url + "/tasks/{taskId}/assign/{assigneeId}", taskId, assigneeId)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization",this.accessToken))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(403))
+                .andExpect(jsonPath("$.message").value("no permission"))
+                .andExpect(jsonPath("$.data").isEmpty());
+
+    }
+
+    @Test
+    void shouldAssignTaskWithWithNotFoundTaskFail () throws Exception {
+        //given
+        int taskId = 5 ;
+        int assigneeId= 3;
+
+        //when then
+        this.mockMvc.perform(patch(base_url + "/tasks/{taskId}/assign/{assigneeId}", taskId, assigneeId)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization",this.accessToken))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(404))
+                .andExpect(jsonPath("$.message").value("could not find task with id: 5"))
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
+
+    @Test
+    void shouldAssignTaskWithWithNotFoundAssigneeFail () throws Exception {
+        //given
+        int taskId = 3 ;
+        int assigneeId= 6;
+
+        //when then
+        this.mockMvc.perform(patch(base_url + "/tasks/{taskId}/assign/{assigneeId}", taskId, assigneeId)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization",this.accessToken))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(404))
+                .andExpect(jsonPath("$.message").value("could not find user with id: 6"))
+                .andExpect(jsonPath("$.data").isEmpty());
+
+    }
+
+    private void loginWithUserAuthority () throws Exception {
+        LoginRequestDto loginRequestDto = new LoginRequestDto("eric@mail.com", "678910");
+        String contentAsString = this.mockMvc.perform(post(base_url + "/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(this.objectMapper.writeValueAsString(loginRequestDto))
+                .accept(MediaType.APPLICATION_JSON)).andReturn().getResponse().getContentAsString();
+
+        JsonNode jsonNode = this.objectMapper.readTree(contentAsString);
+        String accessTokenFromResponse = jsonNode.get("data").asString();
+        this.accessToken = "Bearer " + accessTokenFromResponse;
+    }
+
+
 }
 
 

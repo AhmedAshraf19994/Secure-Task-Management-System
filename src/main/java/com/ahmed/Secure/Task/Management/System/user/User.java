@@ -34,9 +34,4 @@ public class User {
 
     private boolean enabled;
 
-    @OneToMany(mappedBy = "createdBy", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Task> createdTasks;
-
-    @OneToMany(mappedBy = "assignedTo", fetch = FetchType.LAZY)
-    private List<Task> assignedTasks;
 }

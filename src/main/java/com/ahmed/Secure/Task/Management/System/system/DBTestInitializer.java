@@ -51,7 +51,7 @@ public class DBTestInitializer implements CommandLineRunner {
                 .description("implement auth feature in the backend ")
                 .priority(TaskPriority.MEDIUM)
                 .dueDate(LocalDateTime.now().plusDays(2))
-                        .createdBy(userA)
+                        .createdBy(userC)
                 .assignedTo(userB)
                 .build();
 
@@ -61,7 +61,6 @@ public class DBTestInitializer implements CommandLineRunner {
                 .priority(TaskPriority.MEDIUM)
                 .dueDate(LocalDateTime.now().plusDays(2))
                         .createdBy(userA)
-                .assignedTo(userC)
                 .build();
 
                 this.taskRepository.save(taskA);
