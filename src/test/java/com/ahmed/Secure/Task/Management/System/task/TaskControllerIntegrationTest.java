@@ -5,6 +5,7 @@ import com.ahmed.Secure.Task.Management.System.task.dto.CreateTaskDto;
 import com.ahmed.Secure.Task.Management.System.task.dto.UpdateTaskDto;
 import com.redis.testcontainers.RedisContainer;
 import jakarta.transaction.Transactional;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
@@ -214,14 +217,29 @@ public class TaskControllerIntegrationTest {
 
     @Test
     void shouldGetAllTasksSuccess () throws Exception {
+        //given
+        MultiValueMap<@NotNull String,String> params = new LinkedMultiValueMap<>();
+        params.add("page", "0");
+        params.add("size", "1");
+        params.add("sort","id,desc");
+
         //when then
         this.mockMvc.perform(get(base_url + "/tasks")
-                .accept(MediaType.APPLICATION_JSON).header("Authorization", accessToken))
+                .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", accessToken)
+                        .params(params))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.message").value("Get All Tasks Success"))
-                .andExpect(jsonPath("$.data", hasSize(3)));
+                .andExpect(jsonPath("$.data.content", hasSize(1)))
+                .andExpect(jsonPath("$.data.content[0].id").value(3))
+                .andExpect(jsonPath("$.data.page").value(0))
+                .andExpect(jsonPath("$.data.size").value(1))
+                .andExpect(jsonPath("$.data.totalPages").value(3))
+                .andExpect(jsonPath("$.data.totalElements").value(3))
+                .andExpect(jsonPath("$.data.last").value(false))
+                .andExpect(jsonPath("$.data.first").value(true));
     }
 
     @Test

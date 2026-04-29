@@ -1,6 +1,7 @@
 package com.ahmed.Secure.Task.Management.System.task;
 
 import com.ahmed.Secure.Task.Management.System.security.CurrentUserService;
+import com.ahmed.Secure.Task.Management.System.system.PageResponseDto;
 import com.ahmed.Secure.Task.Management.System.system.exceptions.ObjectNotFoundException;
 import com.ahmed.Secure.Task.Management.System.task.dto.CreateTaskDto;
 import com.ahmed.Secure.Task.Management.System.task.dto.TaskResponseDto;
@@ -9,10 +10,12 @@ import com.ahmed.Secure.Task.Management.System.user.User;
 import com.ahmed.Secure.Task.Management.System.user.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 @RequiredArgsConstructor
@@ -51,9 +54,30 @@ public class TaskService {
      return this.taskMapper.toTaskResponseDto(task);
     }
 
-    public List<TaskResponseDto> getAllTasks () {
-        List<Task> tasks = this.taskRepository.findAll();
-        return tasks.stream().map(taskMapper::toTaskResponseDto).collect(Collectors.toList());
+    public PageResponseDto<TaskResponseDto> getAllTasks (Pageable pageable) {
+        //validate the max number of tasks to query
+        if(pageable.getPageSize() > 50 ) {
+            pageable = PageRequest.of(
+                    pageable.getPageNumber(),
+                    50,
+                    pageable.getSort()
+            );
+        }
+
+        Page<Task> pageOfTasks = this.taskRepository.findAll(pageable);
+
+        List<TaskResponseDto> tasks = pageOfTasks.getContent().stream().map(taskMapper::toTaskResponseDto).toList();
+
+        return PageResponseDto
+                .<TaskResponseDto>builder()
+                .content(tasks)
+                .page(pageOfTasks.getNumber())
+                .size(pageOfTasks.getSize())
+                .totalElements(pageOfTasks.getTotalElements())
+                .totalPages(pageOfTasks.getTotalPages())
+                .isFirst(pageOfTasks.isFirst())
+                .isLast(pageOfTasks.isLast())
+                .build();
     }
 
     public TaskResponseDto updateTask (UpdateTaskDto updateTaskDto, int taskId) {
