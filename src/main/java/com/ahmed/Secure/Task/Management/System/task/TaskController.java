@@ -1,11 +1,13 @@
 package com.ahmed.Secure.Task.Management.System.task;
 
+import com.ahmed.Secure.Task.Management.System.system.PageResponseDto;
 import com.ahmed.Secure.Task.Management.System.system.Response;
 import com.ahmed.Secure.Task.Management.System.task.dto.CreateTaskDto;
 import com.ahmed.Secure.Task.Management.System.task.dto.TaskResponseDto;
 import com.ahmed.Secure.Task.Management.System.task.dto.UpdateTaskDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,11 +49,11 @@ public class TaskController {
     }
 
     @GetMapping
-    Response<List<TaskResponseDto>> getAllTasks () {
-        List<TaskResponseDto> tasks = this.taskService.getAllTasks();
+    Response<PageResponseDto<TaskResponseDto>> getAllTasks (Pageable pageable) {
+        PageResponseDto<TaskResponseDto> tasks = this.taskService.getAllTasks(pageable);
 
         return Response
-                .<List<TaskResponseDto>> builder()
+                .<PageResponseDto<TaskResponseDto>> builder()
                 .flag(true)
                 .code(HttpStatus.OK.value())
                 .message("Get All Tasks Success")
