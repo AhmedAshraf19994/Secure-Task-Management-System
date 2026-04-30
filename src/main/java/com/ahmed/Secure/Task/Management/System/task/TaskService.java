@@ -4,6 +4,7 @@ import com.ahmed.Secure.Task.Management.System.security.CurrentUserService;
 import com.ahmed.Secure.Task.Management.System.system.PageResponseDto;
 import com.ahmed.Secure.Task.Management.System.system.exceptions.ObjectNotFoundException;
 import com.ahmed.Secure.Task.Management.System.task.dto.CreateTaskDto;
+import com.ahmed.Secure.Task.Management.System.task.dto.SearchCriteriaDto;
 import com.ahmed.Secure.Task.Management.System.task.dto.TaskResponseDto;
 import com.ahmed.Secure.Task.Management.System.task.dto.UpdateTaskDto;
 import com.ahmed.Secure.Task.Management.System.user.User;
@@ -13,8 +14,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
 import java.util.List;
 
 
@@ -123,4 +127,44 @@ public class TaskService {
 
         return this.taskMapper.toTaskResponseDto(task);
     }
+
+    public PageResponseDto<TaskResponseDto> searchByCriteria (SearchCriteriaDto searchCriteriaDto, Pageable pageable) {
+        Specification<Task> spec = Specification.unrestricted();
+
+        if (searchCriteriaDto.status() != null) {
+            spec = spec.and(TaskSpecifications.hasStatus(searchCriteriaDto.status()));
+        }
+
+        if (searchCriteriaDto.priority() != null) {
+            spec = spec.and(TaskSpecifications.hasPriority(searchCriteriaDto.priority()));
+        }
+
+        if (StringUtils.hasText(searchCriteriaDto.title())) {
+            spec = spec.and(TaskSpecifications.titleContains(searchCriteriaDto.title()));
+        }
+
+        if (searchCriteriaDto.dueBefore() != null && searchCriteriaDto.dueAfter() == null) {
+           spec = spec.and(TaskSpecifications.dueBefore(searchCriteriaDto.dueBefore()));
+        }
+
+        if (searchCriteriaDto.dueBefore() != null && searchCriteriaDto.dueAfter() != null) {
+           spec = spec.and(TaskSpecifications.dueBetween(searchCriteriaDto.dueBefore(), searchCriteriaDto.dueAfter()));
+        }
+
+        Page<Task> pageOfTasks = this.taskRepository.findAll(spec, pageable);
+
+        List<TaskResponseDto> tasks = pageOfTasks.getContent().stream().map(taskMapper::toTaskResponseDto).toList();
+
+        return PageResponseDto
+                .<TaskResponseDto>builder()
+                .content(tasks)
+                .page(pageOfTasks.getNumber())
+                .size(pageOfTasks.getSize())
+                .totalPages(pageOfTasks.getTotalPages())
+                .totalElements(pageOfTasks.getTotalElements())
+                .isLast(pageOfTasks.isLast())
+                .isFirst(pageOfTasks.isFirst())
+                .build();
+    }
+
 }

@@ -58,13 +58,27 @@ public class DBTestInitializer implements CommandLineRunner {
                 Task taskC = Task.builder()
                 .title("dockerize the app")
                 .description("add docker file and create image to run the app")
+                .priority(TaskPriority.LOW)
+                .dueDate(LocalDateTime.now().plusDays(6))
+                        .createdBy(userA)
+                .build();Task taskD = Task.builder()
+                .title("dockerize the app")
+                .description("add docker file and create image to run the app")
                 .priority(TaskPriority.MEDIUM)
-                .dueDate(LocalDateTime.now().plusDays(2))
+                .dueDate(LocalDateTime.now().plusDays(8))
+                        .createdBy(userA)
+                .build();Task taskE = Task.builder()
+                .title("dockerize the app")
+                .description("add docker file and create image to run the app")
+                .priority(TaskPriority.HIGH)
+                .dueDate(LocalDateTime.now().plusDays(10))
                         .createdBy(userA)
                 .build();
 
                 this.taskRepository.save(taskA);
                 this.taskRepository.save(taskB);
                 this.taskRepository.save(taskC);
+                this.taskRepository.save(taskD);
+                this.taskRepository.save(taskE);
     }
 }

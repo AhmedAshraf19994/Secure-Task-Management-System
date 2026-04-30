@@ -2,6 +2,7 @@ package com.ahmed.Secure.Task.Management.System.task;
 
 import com.ahmed.Secure.Task.Management.System.auth.dto.LoginRequestDto;
 import com.ahmed.Secure.Task.Management.System.task.dto.CreateTaskDto;
+import com.ahmed.Secure.Task.Management.System.task.dto.SearchCriteriaDto;
 import com.ahmed.Secure.Task.Management.System.task.dto.UpdateTaskDto;
 import com.redis.testcontainers.RedisContainer;
 import jakarta.transaction.Transactional;
@@ -203,7 +204,7 @@ public class TaskControllerIntegrationTest {
     @Test
     void shouldGetTaskWithNotFoundTaskFail () throws Exception {
         //given
-        int taskId = 4;
+        int taskId = 11;
 
         //when then
         this.mockMvc.perform(get(base_url + "/tasks/{taskId}", taskId)
@@ -211,7 +212,7 @@ public class TaskControllerIntegrationTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.flag").value(false))
                 .andExpect(jsonPath("$.code").value(404))
-                .andExpect(jsonPath("$.message").value("could not find task with id: 4"))
+                .andExpect(jsonPath("$.message").value("could not find task with id: 11"))
                 .andExpect(jsonPath("$.data").isEmpty());
     }
 
@@ -233,11 +234,11 @@ public class TaskControllerIntegrationTest {
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.message").value("Get All Tasks Success"))
                 .andExpect(jsonPath("$.data.content", hasSize(1)))
-                .andExpect(jsonPath("$.data.content[0].id").value(3))
+                .andExpect(jsonPath("$.data.content[0].id").value(5))
                 .andExpect(jsonPath("$.data.page").value(0))
                 .andExpect(jsonPath("$.data.size").value(1))
-                .andExpect(jsonPath("$.data.totalPages").value(3))
-                .andExpect(jsonPath("$.data.totalElements").value(3))
+                .andExpect(jsonPath("$.data.totalPages").value(5))
+                .andExpect(jsonPath("$.data.totalElements").value(5))
                 .andExpect(jsonPath("$.data.last").value(false))
                 .andExpect(jsonPath("$.data.first").value(true));
     }
@@ -285,7 +286,7 @@ public class TaskControllerIntegrationTest {
                 TaskPriority.HIGH);
 
         //when then
-        this.mockMvc.perform(put(base_url + "/tasks/{taskId}",5)
+        this.mockMvc.perform(put(base_url + "/tasks/{taskId}",11)
                         .header("Authorization", this.accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(updateTaskDto))
@@ -293,7 +294,7 @@ public class TaskControllerIntegrationTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.flag").value(false))
                 .andExpect(jsonPath("$.code").value(404))
-                .andExpect(jsonPath("$.message").value("could not find task with id: 5"))
+                .andExpect(jsonPath("$.message").value("could not find task with id: 11"))
                 .andExpect(jsonPath("$.data").isEmpty()) ;
     }
 
@@ -324,7 +325,7 @@ public class TaskControllerIntegrationTest {
     @Test
     void shouldDeleteWithNoFoundTaskFail () throws Exception {
         //given
-        int taskId = 4;
+        int taskId = 11;
 
         //when then
         this.mockMvc.perform(get(base_url + "/tasks/{taskId}", taskId)
@@ -332,7 +333,7 @@ public class TaskControllerIntegrationTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.flag").value(false))
                 .andExpect(jsonPath("$.code").value(404))
-                .andExpect(jsonPath("$.message").value("could not find task with id: 4"))
+                .andExpect(jsonPath("$.message").value("could not find task with id: 11"))
                 .andExpect(jsonPath("$.data").isEmpty());
     }
 
@@ -417,7 +418,7 @@ public class TaskControllerIntegrationTest {
     @Test
     void shouldAssignTaskWithWithNotFoundTaskFail () throws Exception {
         //given
-        int taskId = 5 ;
+        int taskId = 11 ;
         int assigneeId= 3;
 
         //when then
@@ -427,7 +428,7 @@ public class TaskControllerIntegrationTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.flag").value(false))
                 .andExpect(jsonPath("$.code").value(404))
-                .andExpect(jsonPath("$.message").value("could not find task with id: 5"))
+                .andExpect(jsonPath("$.message").value("could not find task with id: 11"))
                 .andExpect(jsonPath("$.data").isEmpty());
     }
 
@@ -461,8 +462,53 @@ public class TaskControllerIntegrationTest {
         this.accessToken = "Bearer " + accessTokenFromResponse;
     }
 
+    @Test
+    void shouldSearchByCriteriaSuccessWithTitleAndDueBefore () throws Exception {
+        //given
+        LocalDateTime dueBefore = LocalDateTime.now().plusDays(9);
 
+        SearchCriteriaDto searchCriteriaDto = new SearchCriteriaDto("docker",dueBefore,null, null,null);
+
+        //when then
+        this.mockMvc.perform(
+                post(base_url + "/tasks/search")
+                        .header("Authorization", this.accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(this.objectMapper.writeValueAsString(searchCriteriaDto))
+                        .accept(MediaType.APPLICATION_JSON)
+                    )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.message").value("Search Success"))
+                .andExpect(jsonPath("$.data.content",hasSize(2)));
+    }
+
+    @Test
+    void shouldSearchByCriteriaSuccessWithTitleAndDueBeforeAndPriority () throws Exception {
+        //given
+        LocalDateTime dueBefore = LocalDateTime.now().plusDays(9);
+
+        SearchCriteriaDto searchCriteriaDto = new SearchCriteriaDto("docker",dueBefore,null, TaskPriority.LOW,null);
+
+        //when then
+        this.mockMvc.perform(
+                post(base_url + "/tasks/search")
+                        .header("Authorization", this.accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(this.objectMapper.writeValueAsString(searchCriteriaDto))
+                        .accept(MediaType.APPLICATION_JSON)
+                    )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.message").value("Search Success"))
+                .andExpect(jsonPath("$.data.content",hasSize(1)));
+    }
 }
+
+
+
 
 
 

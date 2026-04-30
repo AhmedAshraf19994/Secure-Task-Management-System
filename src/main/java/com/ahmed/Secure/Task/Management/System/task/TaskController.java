@@ -3,6 +3,7 @@ package com.ahmed.Secure.Task.Management.System.task;
 import com.ahmed.Secure.Task.Management.System.system.PageResponseDto;
 import com.ahmed.Secure.Task.Management.System.system.Response;
 import com.ahmed.Secure.Task.Management.System.task.dto.CreateTaskDto;
+import com.ahmed.Secure.Task.Management.System.task.dto.SearchCriteriaDto;
 import com.ahmed.Secure.Task.Management.System.task.dto.TaskResponseDto;
 import com.ahmed.Secure.Task.Management.System.task.dto.UpdateTaskDto;
 import jakarta.validation.Valid;
@@ -50,14 +51,14 @@ public class TaskController {
 
     @GetMapping
     Response<PageResponseDto<TaskResponseDto>> getAllTasks (Pageable pageable) {
-        PageResponseDto<TaskResponseDto> tasks = this.taskService.getAllTasks(pageable);
+        PageResponseDto<TaskResponseDto> page = this.taskService.getAllTasks(pageable);
 
         return Response
                 .<PageResponseDto<TaskResponseDto>> builder()
                 .flag(true)
                 .code(HttpStatus.OK.value())
                 .message("Get All Tasks Success")
-                .data(tasks)
+                .data(page)
                 .build();
     }
 
@@ -104,4 +105,21 @@ public class TaskController {
                 .data(task)
                 .build();
     }
+
+    @PostMapping("/search")
+    Response<PageResponseDto<TaskResponseDto>> searchByCriteria (
+            @RequestBody SearchCriteriaDto searchCriteriaDto,
+            Pageable pageable
+    ) {
+        PageResponseDto<TaskResponseDto> page = this.taskService.searchByCriteria(searchCriteriaDto, pageable);
+
+        return Response
+                .<PageResponseDto<TaskResponseDto>> builder()
+                .flag(true)
+                .code(HttpStatus.OK.value())
+                .message("Search Success")
+                .data(page)
+                .build();
+    }
+
 }
