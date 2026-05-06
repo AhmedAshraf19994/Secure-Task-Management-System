@@ -7,10 +7,13 @@ import com.ahmed.Secure.Task.Management.System.task.dto.CreateTaskDto;
 import com.ahmed.Secure.Task.Management.System.task.dto.SearchCriteriaDto;
 import com.ahmed.Secure.Task.Management.System.task.dto.TaskResponseDto;
 import com.ahmed.Secure.Task.Management.System.task.dto.UpdateTaskDto;
+import com.ahmed.Secure.Task.Management.System.task.events.TaskAssignedEvent;
+import com.ahmed.Secure.Task.Management.System.task.events.TaskReassignedEvent;
 import com.ahmed.Secure.Task.Management.System.user.User;
 import com.ahmed.Secure.Task.Management.System.user.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -36,6 +39,8 @@ public class TaskService {
 
     private final CurrentUserService currentUserService;
 
+    private final ApplicationEventPublisher publisher;
+
 
     public TaskResponseDto createTask (CreateTaskDto createTaskDto) {
         User assignedTo = null ;
@@ -47,6 +52,16 @@ public class TaskService {
 
         Task task = this.taskMapper.toTask(createTaskDto, assignedTo);
         Task savedTask = this.taskRepository.save(task);
+
+        // event for task activity auditing
+        if(savedTask.getAssignedTo() != null) {
+            this.publisher.publishEvent(new TaskAssignedEvent(
+                    savedTask.getId(),
+                    this.currentUserService.getUserId(),
+                    savedTask.getAssignedTo().getId()
+                    ));
+        }
+
         return this.taskMapper.toTaskResponseDto(savedTask);
     }
 
@@ -108,13 +123,13 @@ public class TaskService {
                 .orElseThrow(() -> new ObjectNotFoundException("task", taskId));
 
         //prevent reassigning to the same user
-        if(task.getAssignedTo() != null && task.getAssignedTo().getId() == assigneeId) {
+        if (task.getAssignedTo() != null && task.getAssignedTo().getId() == assigneeId) {
             return this.taskMapper.toTaskResponseDto(task);
         }
 
         //authorize only task owner or admin can do that
         // manual check could have used preAuthorize but don't want to hit the  database twice for task retrieval
-        if(!this.currentUserService.hasAuthority(task.getCreatedBy().getId())) {
+        if (!this.currentUserService.canAccessResource(task.getCreatedBy().getId())) {
             throw new AccessDeniedException("no permission");
         }
 
@@ -122,8 +137,38 @@ public class TaskService {
         User userTobeAssignedTo = this.userRepository.findById(assigneeId)
                 .orElseThrow(() -> new ObjectNotFoundException("user", assigneeId));
 
-        // doing the reassign
-        task.setAssignedTo(userTobeAssignedTo);
+        int currentUserId = this.currentUserService.getUserId();
+
+
+        if (task.getAssignedTo() != null) {
+            //extract oldAssigneeId
+            int oldAssigneeId = task.getAssignedTo().getId();
+
+            // doing the reassign
+            task.setAssignedTo(userTobeAssignedTo);
+
+             this.taskRepository.save(task);
+
+            //publish event for task reassigned
+            this.publisher.publishEvent(new TaskReassignedEvent(
+                    taskId,
+                    currentUserId,
+                    oldAssigneeId,
+                    assigneeId
+            ));
+        } else {
+            task.setAssignedTo(userTobeAssignedTo);
+
+            this.taskRepository.save(task);
+
+
+            //publish event for task assigned
+            this.publisher.publishEvent(new TaskAssignedEvent(
+                    taskId,
+                    currentUserId,
+                    assigneeId
+            ));
+        }
 
         return this.taskMapper.toTaskResponseDto(task);
     }
