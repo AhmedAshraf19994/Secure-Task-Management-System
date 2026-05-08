@@ -1,6 +1,7 @@
 package com.ahmed.Secure.Task.Management.System.taskActivity;
 
 import com.ahmed.Secure.Task.Management.System.task.Task;
+import com.ahmed.Secure.Task.Management.System.taskActivity.dto.TaskActivityResponseDto;
 import com.ahmed.Secure.Task.Management.System.user.User;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
@@ -82,5 +83,61 @@ class TaskActivityMapperTest {
 
         //then
         assertEquals("marc reassigned task from: ahmed to: ali", description);
+    }
+
+    @Test
+    void fromReassignedTaskActivityToTaskActivityResponseDto () {
+        //given
+        User actor = User.builder().id(1).name("marc").build();
+        User oldAssignee = User.builder().id(1).name("ahmed").build();
+        User newAssignee = User.builder().id(2).name("ali").build();
+        Task task = Task.builder().id(1).build();
+        TaskActivity taskActivity = TaskActivity.builder()
+                .id(1)
+                .task(task)
+                .actor(actor)
+                .description("marc reassigned task from: ahmed to: ali")
+                .type(TaskActivityType.TASK_REASSIGNED)
+                .newAssignee(newAssignee)
+                .oldAssignee(oldAssignee)
+                .build();
+
+        //then
+        TaskActivityResponseDto taskActivityResponseDto = this.taskActivityMapper.toTaskActivityResponseDto(taskActivity);
+
+        //when
+        assertEquals(1, taskActivityResponseDto.id());
+        assertEquals("marc", taskActivityResponseDto.actorName());
+        assertEquals("ahmed", taskActivityResponseDto.oldAssigneeName());
+        assertEquals("ali", taskActivityResponseDto.newAssigneeName());
+        assertEquals(TaskActivityType.TASK_REASSIGNED, taskActivityResponseDto.type());
+        assertEquals("marc reassigned task from: ahmed to: ali", taskActivityResponseDto.description());
+    }
+
+    @Test
+    void fromAssignedTaskActivityToTaskActivityResponseDto () {
+        //given
+        User actor = User.builder().id(1).name("marc").build();
+        User newAssignee = User.builder().id(2).name("ali").build();
+        Task task = Task.builder().id(1).build();
+        TaskActivity taskActivity = TaskActivity.builder()
+                .id(1)
+                .task(task)
+                .actor(actor)
+                .description("marc assigned task to: ali")
+                .type(TaskActivityType.TASK_REASSIGNED)
+                .newAssignee(newAssignee)
+                .build();
+
+        //then
+        TaskActivityResponseDto taskActivityResponseDto = this.taskActivityMapper.toTaskActivityResponseDto(taskActivity);
+
+        //when
+        assertEquals(1, taskActivityResponseDto.id());
+        assertEquals("marc", taskActivityResponseDto.actorName());
+        assertNull(taskActivityResponseDto.oldAssigneeName());
+        assertEquals("ali", taskActivityResponseDto.newAssigneeName());
+        assertEquals(TaskActivityType.TASK_REASSIGNED, taskActivityResponseDto.type());
+        assertEquals("marc assigned task to: ali", taskActivityResponseDto.description());
     }
 }
