@@ -1,16 +1,22 @@
 package com.ahmed.Secure.Task.Management.System.taskActivity;
 
+import com.ahmed.Secure.Task.Management.System.system.PageResponseDto;
 import com.ahmed.Secure.Task.Management.System.system.exceptions.ObjectNotFoundException;
 import com.ahmed.Secure.Task.Management.System.task.Task;
 import com.ahmed.Secure.Task.Management.System.task.TaskRepository;
 import com.ahmed.Secure.Task.Management.System.task.events.TaskAssignedEvent;
 import com.ahmed.Secure.Task.Management.System.task.events.TaskReassignedEvent;
+import com.ahmed.Secure.Task.Management.System.taskActivity.dto.TaskActivityResponseDto;
 import com.ahmed.Secure.Task.Management.System.user.User;
 import com.ahmed.Secure.Task.Management.System.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -73,5 +79,24 @@ public class TaskActivityService {
     private Task getTask (int taskId) {
         return this.taskRepository.findById(taskId)
                 .orElseThrow(() -> new ObjectNotFoundException("task", taskId));
+    }
+
+
+    public PageResponseDto<TaskActivityResponseDto> getActivitiesByTaskId(int taskId, Pageable pageable) {
+        Page<TaskActivity> page = this.taskActivityRepository.findAllByTaskId(taskId, pageable);
+
+        List<TaskActivityResponseDto> content = page.getContent().stream().map(taskActivityMapper::toTaskActivityResponseDto).toList();
+
+        return PageResponseDto
+                .<TaskActivityResponseDto>builder()
+                .content(content)
+                .size(page.getSize())
+                .page(page.getNumber())
+                .totalPages(page.getTotalPages())
+                .totalElements(page.getTotalElements())
+                .isFirst(page.isFirst())
+                .isLast(page.isLast())
+                .build();
+
     }
 }

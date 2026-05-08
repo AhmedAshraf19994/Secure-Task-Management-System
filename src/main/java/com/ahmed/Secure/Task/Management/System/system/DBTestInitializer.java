@@ -3,6 +3,9 @@ package com.ahmed.Secure.Task.Management.System.system;
 import com.ahmed.Secure.Task.Management.System.task.Task;
 import com.ahmed.Secure.Task.Management.System.task.TaskPriority;
 import com.ahmed.Secure.Task.Management.System.task.TaskRepository;
+import com.ahmed.Secure.Task.Management.System.taskActivity.TaskActivity;
+import com.ahmed.Secure.Task.Management.System.taskActivity.TaskActivityRepository;
+import com.ahmed.Secure.Task.Management.System.taskActivity.TaskActivityType;
 import com.ahmed.Secure.Task.Management.System.user.User;
 import com.ahmed.Secure.Task.Management.System.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +26,8 @@ public class DBTestInitializer implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
 
     private final TaskRepository taskRepository;
+
+    private final TaskActivityRepository taskActivityRepository;
 
     @Override
     public void run(String... args) throws Exception {
@@ -80,5 +85,42 @@ public class DBTestInitializer implements CommandLineRunner {
                 this.taskRepository.save(taskC);
                 this.taskRepository.save(taskD);
                 this.taskRepository.save(taskE);
+
+                 TaskActivity taskActivityA = TaskActivity.builder()
+                .task(taskA)
+                .actor(userA)
+                .oldAssignee(userC)
+                .description("marc assigned task to: ali")
+                .type(TaskActivityType.TASK_REASSIGNED)
+                .newAssignee(userC)
+                .build();
+                TaskActivity taskActivityB = TaskActivity.builder()
+                .task(taskA)
+                .actor(userA)
+                .oldAssignee(userC)
+                .description("marc assigned task to: ali")
+                .type(TaskActivityType.TASK_REASSIGNED)
+                .newAssignee(userC)
+                .build();
+                TaskActivity taskActivityC = TaskActivity.builder()
+                .task(taskA)
+                .actor(userA)
+                .description("marc assigned task to: ali")
+                .type(TaskActivityType.TASK_ASSIGNED)
+                .newAssignee(userC)
+                .build();
+                TaskActivity taskActivityD = TaskActivity.builder()
+                .task(taskB)
+                .actor(userA)
+                .description("marc assigned task to: ali")
+                .type(TaskActivityType.TASK_ASSIGNED)
+                .newAssignee(userC)
+                .build();
+
+                this.taskActivityRepository.save(taskActivityA);
+                this.taskActivityRepository.save(taskActivityB);
+                this.taskActivityRepository.save(taskActivityC);
+                this.taskActivityRepository.save(taskActivityD);
+
     }
 }
