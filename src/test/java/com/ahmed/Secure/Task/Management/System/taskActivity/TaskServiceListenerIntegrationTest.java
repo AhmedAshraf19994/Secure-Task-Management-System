@@ -32,7 +32,13 @@ public class TaskServiceListenerIntegrationTest {
     @Transactional
     void shouldHandleTaskAssignedSuccess () {
         //given
-        TaskAssignedEvent taskAssignedEvent = new TaskAssignedEvent(1, 1, 2);
+        TaskAssignedEvent taskAssignedEvent = new TaskAssignedEvent(1,
+                "test",
+                "testAssigneeName",
+                "testAssigneeEmail",
+                "currentUserName",
+                1,
+                2);
 
         //when
         this.publisher.publishEvent(taskAssignedEvent);

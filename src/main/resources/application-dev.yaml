@@ -10,4 +10,18 @@ spring:
     redis:
       host: localhost
       port: 6379
+  mail:
+    host: localhost
+    port: 1025
+    username:
+    password:
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+
+
 

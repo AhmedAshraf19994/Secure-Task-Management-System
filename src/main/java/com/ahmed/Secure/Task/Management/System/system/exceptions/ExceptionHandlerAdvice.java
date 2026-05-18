@@ -124,6 +124,18 @@ public class ExceptionHandlerAdvice {
                 .build();
     }
 
+    @ExceptionHandler(CustomEmailSendingException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    Response<?> handleCustomEmailSendingException (CustomEmailSendingException exception) {
+        return Response
+                .builder()
+                .flag(false)
+                .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .message(exception.getMessage())
+                .data(exception.getCause().getMessage())
+                .build();
+
+    }
 
 
 }

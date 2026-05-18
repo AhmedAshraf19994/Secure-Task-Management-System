@@ -57,6 +57,10 @@ public class TaskService {
         if(savedTask.getAssignedTo() != null) {
             this.publisher.publishEvent(new TaskAssignedEvent(
                     savedTask.getId(),
+                    task.getTitle(),
+                    assignedTo.getName(),
+                    assignedTo.getEmail(),
+                    this.currentUserService.getCurrentUser().getName(),
                     this.currentUserService.getUserId(),
                     savedTask.getAssignedTo().getId()
                     ));
@@ -165,7 +169,11 @@ public class TaskService {
             //publish event for task assigned
             this.publisher.publishEvent(new TaskAssignedEvent(
                     taskId,
-                    currentUserId,
+                    task.getTitle(),
+                    userTobeAssignedTo.getName(),
+                    userTobeAssignedTo.getEmail(),
+                    this.currentUserService.getCurrentUser().getName(),
+                    this.currentUserService.getCurrentUser().getId(),
                     assigneeId
             ));
         }

@@ -10,3 +10,7 @@ server:
 api:
   endpoint:
     base-url: "/api/v1"
+
+app:
+  email:
+    from: no-reply@task-management.com
