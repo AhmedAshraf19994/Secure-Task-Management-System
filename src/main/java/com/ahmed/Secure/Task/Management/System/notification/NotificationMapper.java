@@ -1,6 +1,8 @@
 package com.ahmed.Secure.Task.Management.System.notification;
 
 
+import com.ahmed.Secure.Task.Management.System.notification.dto.NotificationResponseDto;
+import com.ahmed.Secure.Task.Management.System.notification.dto.RealtimeNotificationDto;
 import com.ahmed.Secure.Task.Management.System.task.Task;
 import com.ahmed.Secure.Task.Management.System.user.User;
 import org.mapstruct.Mapper;
@@ -16,4 +18,9 @@ public interface NotificationMapper {
     @Mapping(target = "task", source = "task")
     @Mapping(target = "receiver", source = "receiver")
     public Notification toNotification(Task task, User actor, User receiver, String message, NotificationType type);
+
+    public RealtimeNotificationDto toRealtimeNotificationDto(Notification event);
+
+    public NotificationResponseDto toNotificationResponseDto (Notification notification);
+
 }

@@ -1,5 +1,8 @@
 package com.ahmed.Secure.Task.Management.System.system;
 
+import com.ahmed.Secure.Task.Management.System.notification.Notification;
+import com.ahmed.Secure.Task.Management.System.notification.NotificationRepository;
+import com.ahmed.Secure.Task.Management.System.notification.NotificationType;
 import com.ahmed.Secure.Task.Management.System.task.Task;
 import com.ahmed.Secure.Task.Management.System.task.TaskPriority;
 import com.ahmed.Secure.Task.Management.System.task.TaskRepository;
@@ -28,6 +31,8 @@ public class DBTestInitializer implements CommandLineRunner {
     private final TaskRepository taskRepository;
 
     private final TaskActivityRepository taskActivityRepository;
+
+    private final NotificationRepository notificationRepository;
 
     @Override
     public void run(String... args) throws Exception {
@@ -121,6 +126,19 @@ public class DBTestInitializer implements CommandLineRunner {
                 this.taskActivityRepository.save(taskActivityB);
                 this.taskActivityRepository.save(taskActivityC);
                 this.taskActivityRepository.save(taskActivityD);
+
+                //notification for taskA reassignment
+        Notification notification =
+                Notification.builder()
+                        .message("Ahmed assigned task Login Bug")
+                        .isRead(false)
+                        .type(NotificationType.TASK_ASSIGNED)
+                        .receiver(userA)
+                        .actor(userB)
+                        .task(taskA)
+                        .build();
+
+        this.notificationRepository.save(notification);
 
     }
 }
