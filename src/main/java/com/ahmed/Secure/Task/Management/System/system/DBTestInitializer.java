@@ -9,6 +9,9 @@ import com.ahmed.Secure.Task.Management.System.task.TaskRepository;
 import com.ahmed.Secure.Task.Management.System.taskActivity.TaskActivity;
 import com.ahmed.Secure.Task.Management.System.taskActivity.TaskActivityRepository;
 import com.ahmed.Secure.Task.Management.System.taskActivity.TaskActivityType;
+import com.ahmed.Secure.Task.Management.System.taskAttachment.TaskAttachment;
+import com.ahmed.Secure.Task.Management.System.taskAttachment.TaskAttachmentRepository;
+import com.ahmed.Secure.Task.Management.System.taskAttachment.TaskAttachmentStatus;
 import com.ahmed.Secure.Task.Management.System.user.User;
 import com.ahmed.Secure.Task.Management.System.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +20,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
@@ -33,6 +37,8 @@ public class DBTestInitializer implements CommandLineRunner {
     private final TaskActivityRepository taskActivityRepository;
 
     private final NotificationRepository notificationRepository;
+
+    private final TaskAttachmentRepository taskAttachmentRepository;
 
     @Override
     public void run(String... args) throws Exception {
@@ -139,6 +145,7 @@ public class DBTestInitializer implements CommandLineRunner {
                         .build();
 
         this.notificationRepository.save(notification);
+
 
     }
 }

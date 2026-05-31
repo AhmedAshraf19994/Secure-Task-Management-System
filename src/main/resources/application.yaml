@@ -1,11 +1,14 @@
 spring:
-  application:
-    name: Secure-Task-Management-System
   profiles:
     active: dev
 
+  cloud:
+    aws:
+      region:
+        static: ${AWS_REGION:eu-central-1}
+
 server:
-  port: 80
+  port: 8080
 
 api:
   endpoint:
@@ -14,3 +17,18 @@ api:
 app:
   email:
     from: no-reply@task-management.com
+
+  task-attachments-storage:
+    container-name: "task-attachments"
+    prefix: "task"
+    max-file-size: 524288000 # 500MB
+    allowed-file-types:
+      - image/jpeg
+      - image/png
+      - application/pdf
+    allowed-file-extensions:
+      - .jpg
+      - .jpeg
+      - .png
+      - .pdf
+    url-expiration-seconds: 900 # 15 minutes

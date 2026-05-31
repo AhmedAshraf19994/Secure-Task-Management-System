@@ -1,6 +1,7 @@
 package com.ahmed.Secure.Task.Management.System.security;
 
 import com.ahmed.Secure.Task.Management.System.system.exceptions.ObjectNotFoundException;
+import com.ahmed.Secure.Task.Management.System.task.Task;
 import com.ahmed.Secure.Task.Management.System.user.User;
 import com.ahmed.Secure.Task.Management.System.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +38,7 @@ public class CurrentUserService {
         return (Jwt) authentication.getPrincipal();
     }
 
-    public boolean canAccessResource (int resourceOwnerId) {
+    public boolean hasPermission(int resourceOwnerId) {
         return isResourceOwner(resourceOwnerId) || isAdmin();
     }
 
@@ -44,5 +46,10 @@ public class CurrentUserService {
         int userId = getUserId();
         return this.userRepository.findById(userId)
                 .orElseThrow( () -> new ObjectNotFoundException("user", userId));
+    }
+
+    public boolean canViewTask(Task task) {
+        return Objects.equals(getUserId(), getUserId()) || isResourceOwner(task.getCreatedBy().getId());
+
     }
 }

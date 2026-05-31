@@ -9,3 +9,16 @@ services:
     ports:
       - "1025:1025"
       - "8025:8025"
+
+  localstack:
+    container_name: localstack_main
+    image: localstack/localstack
+    ports:
+      - "127.0.0.1:4566:4566"            # LocalStack Gateway
+      - "127.0.0.1:4510-4559:4510-4559"  # External service ports
+    environment:
+      - DEBUG=${DEBUG:-0}
+      - LOCALSTACK_AUTH_TOKEN=ls-VInAFARi-roSI-ZABO-8196-dUlu53525b53
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
