@@ -71,7 +71,7 @@ public class ExceptionHandlerAdvice {
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     Response<?> handleInsufficientAuthenticationException (InsufficientAuthenticationException exception) {
             return Response.builder()
-                    .flag(true)
+                    .flag(false)
                     .code(HttpStatus.UNAUTHORIZED.value())
                     .data(null)
                     .message("please login")
@@ -93,7 +93,7 @@ public class ExceptionHandlerAdvice {
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     Response<?> handleInvalidBearerTokenException (InvalidBearerTokenException exception) {
             return Response.builder()
-                    .flag(true)
+                    .flag(false)
                     .code(HttpStatus.UNAUTHORIZED.value())
                     .data(null)
                     .message("Invalid token")
@@ -108,7 +108,7 @@ public class ExceptionHandlerAdvice {
                 .flag(false)
                 .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .message("Internal server error")
-                .data(exception.getCause().getMessage())
+                .data(exception.getMessage())
                 .build();
     }
 
@@ -134,7 +134,17 @@ public class ExceptionHandlerAdvice {
                 .message(exception.getMessage())
                 .data(exception.getCause().getMessage())
                 .build();
+    }
 
+    @ExceptionHandler(CustomFileStorageException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    Response<?> handleCustomFileStorageException (CustomFileStorageException exception) {
+        return Response
+                .builder()
+                .flag(false)
+                .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .message(exception.getMessage())
+                .build();
     }
 
 

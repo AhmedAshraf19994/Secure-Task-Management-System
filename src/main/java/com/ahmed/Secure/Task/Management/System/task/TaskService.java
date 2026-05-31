@@ -133,7 +133,7 @@ public class TaskService {
 
         //authorize only task owner or admin can do that
         // manual check could have used preAuthorize but don't want to hit the  database twice for task retrieval
-        if (!this.currentUserService.canAccessResource(task.getCreatedBy().getId())) {
+        if (!this.currentUserService.hasPermission(task.getCreatedBy().getId())) {
             throw new AccessDeniedException("no permission");
         }
 
