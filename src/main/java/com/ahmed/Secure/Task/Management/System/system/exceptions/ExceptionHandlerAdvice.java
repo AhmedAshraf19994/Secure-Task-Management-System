@@ -147,5 +147,26 @@ public class ExceptionHandlerAdvice {
                 .build();
     }
 
+    @ExceptionHandler(IdempotencyCacheException.class)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    Response<?> handleIdempotencyCacheException (IdempotencyCacheException exception) {
+        return Response
+                .builder()
+                .flag(false)
+                .code(HttpStatus.SERVICE_UNAVAILABLE.value())
+                .message(exception.getMessage())
+                .build();
+    }
+    @ExceptionHandler(IdempotencyKeyException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    Response<?> handleIdempotencyCacheException (IdempotencyKeyException exception) {
+        return Response
+                .builder()
+                .flag(false)
+                .code(HttpStatus.BAD_REQUEST.value())
+                .message(exception.getMessage())
+                .build();
+    }
+
 
 }
