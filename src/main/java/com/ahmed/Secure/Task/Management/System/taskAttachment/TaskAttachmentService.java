@@ -2,6 +2,8 @@ package com.ahmed.Secure.Task.Management.System.taskAttachment;
 
 
 import com.ahmed.Secure.Task.Management.System.client.fileStorage.FileStorageClient;
+import com.ahmed.Secure.Task.Management.System.idempotency.IdempotencyTtl;
+import com.ahmed.Secure.Task.Management.System.idempotency.Idempotent;
 import com.ahmed.Secure.Task.Management.System.security.CurrentUserService;
 import com.ahmed.Secure.Task.Management.System.system.exceptions.BusinessException;
 import com.ahmed.Secure.Task.Management.System.system.exceptions.ObjectNotFoundException;
@@ -40,6 +42,11 @@ public class TaskAttachmentService {
 
 
     @Transactional
+    @Idempotent(
+            keyPrefix = "upload-url",
+            timeToLive = IdempotencyTtl.TWO_HOURS, // 1 hour
+            hashRequestBody = true
+    )
     public UploadUrlResponseDto createTaskAttachment(CreateTaskAttachmentDto createTaskAttachmentDto, int taskId) {
         //verify task exist
         Task task = this.taskRepository.findById(taskId)

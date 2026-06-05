@@ -27,6 +27,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -93,6 +94,7 @@ class TaskAttachmentControllerIntegrationTest {
     @Test
     void shouldGenerateUploadUrlSuccess() throws Exception {
         // given
+        String idempotencyKey = UUID.randomUUID().toString();
         int taskId = 1;  // Task owned by Ahmed (from test data)
         CreateTaskAttachmentDto createTaskAttachmentDto = new CreateTaskAttachmentDto(
                 "report.pdf",
@@ -105,6 +107,7 @@ class TaskAttachmentControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(createTaskAttachmentDto))
                         .header("Authorization", this.accessTokenAhmed)
+                        .header("Idempotency-Key", idempotencyKey)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.flag").value(true))
@@ -211,6 +214,7 @@ class TaskAttachmentControllerIntegrationTest {
     @Test
     void shouldGenerateUploadUrlTaskNotFoundFail() throws Exception {
         // given
+        String idempotencyKey = UUID.randomUUID().toString();
         int taskId = 999;
         CreateTaskAttachmentDto createTaskAttachmentDto = new CreateTaskAttachmentDto(
                 "report.pdf",
@@ -223,6 +227,7 @@ class TaskAttachmentControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(createTaskAttachmentDto))
                         .header("Authorization", this.accessTokenAhmed)
+                        .header("Idempotency-Key", idempotencyKey)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.flag").value(false))
@@ -238,6 +243,7 @@ class TaskAttachmentControllerIntegrationTest {
     @Test
     void shouldGenerateUploadUrlUnauthorizedFail() throws Exception {
         // given
+        String idempotencyKey = UUID.randomUUID().toString();
         int taskId = 3;  // Task owned by Ahmed
         CreateTaskAttachmentDto createTaskAttachmentDto = new CreateTaskAttachmentDto(
                 "report.pdf",
@@ -249,7 +255,8 @@ class TaskAttachmentControllerIntegrationTest {
         this.mockMvc.perform(post(baseUrl + "/tasks/{taskId}/attachments/upload", taskId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(createTaskAttachmentDto))
-                        .header("Authorization", this.accessTokenEric)  // Different user
+                        .header("Authorization", this.accessTokenEric)// Different user
+                        .header("Idempotency-Key", idempotencyKey)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.flag").value(false))
@@ -316,6 +323,7 @@ class TaskAttachmentControllerIntegrationTest {
     void shouldGenerateMultipleUploadUrlsForSameTaskSuccess() throws Exception {
         // given
         int taskId = 1;
+        String idempotencyKey = UUID.randomUUID().toString();
 
         CreateTaskAttachmentDto attachment1 = new CreateTaskAttachmentDto(
                 "report1.pdf",
@@ -334,6 +342,7 @@ class TaskAttachmentControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(attachment1))
                         .header("Authorization", this.accessTokenAhmed)
+                        .header("Idempotency-Key", idempotencyKey)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.id").isNumber());
@@ -343,6 +352,7 @@ class TaskAttachmentControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(attachment2))
                         .header("Authorization", this.accessTokenAhmed)
+                        .header("Idempotency-Key", idempotencyKey)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.id").isNumber())
@@ -362,6 +372,7 @@ class TaskAttachmentControllerIntegrationTest {
     @Test
     void shouldVerifyUploadUrlExpirationTime() throws Exception {
         // given
+        String idempotencyKey = UUID.randomUUID().toString();
         int taskId = 1;
         Instant beforeRequest = Instant.now();
 
@@ -376,6 +387,7 @@ class TaskAttachmentControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(createTaskAttachmentDto))
                         .header("Authorization", this.accessTokenAhmed)
+                        .header("Idempotency-Key", idempotencyKey)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
@@ -399,6 +411,7 @@ class TaskAttachmentControllerIntegrationTest {
     @Test
     void shouldVerifyAttachmentMetadataPersistedCorrectly() throws Exception {
         // given
+        String idempotencyKey = UUID.randomUUID().toString();
         int taskId = 1;
         String fileName = "important.pdf";
         String fileType = "application/pdf";
@@ -415,6 +428,7 @@ class TaskAttachmentControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(createTaskAttachmentDto))
                         .header("Authorization", this.accessTokenAhmed)
+                        .header("Idempotency-Key", idempotencyKey)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
@@ -441,6 +455,7 @@ class TaskAttachmentControllerIntegrationTest {
     @Test
     void shouldVerifyResponseStructure() throws Exception {
         // given
+        String idempotencyKey = UUID.randomUUID().toString();
         int taskId = 1;
         CreateTaskAttachmentDto createTaskAttachmentDto = new CreateTaskAttachmentDto(
                 "report.pdf",
@@ -453,6 +468,7 @@ class TaskAttachmentControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(createTaskAttachmentDto))
                         .header("Authorization", this.accessTokenAhmed)
+                        .header("Idempotency-Key", idempotencyKey)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.flag").isBoolean())
