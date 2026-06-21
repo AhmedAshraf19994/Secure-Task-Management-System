@@ -168,5 +168,17 @@ public class ExceptionHandlerAdvice {
                 .build();
     }
 
+    @ExceptionHandler({MissingRefreshTokenException.class,InvalidRefreshTokenException.class,RefreshTokenReuseException.class})
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    Response<?> handleMissingRefreshTokenException (Exception exception) {
+        return Response
+                .builder()
+                .flag(false)
+                .code(HttpStatus.UNAUTHORIZED.value())
+                .message(exception.getMessage())
+                .build();
+    }
+
+
 
 }

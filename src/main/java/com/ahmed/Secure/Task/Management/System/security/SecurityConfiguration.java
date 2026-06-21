@@ -21,8 +21,6 @@ public class SecurityConfiguration {
 
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
-    private final JwtCacheValidationFilter jwtCacheValidationFilter;
-
     @Value("${api.endpoint.base-url}")
     String base_url;
 
@@ -31,6 +29,7 @@ public class SecurityConfiguration {
        return http
                .authorizeHttpRequests(authorizeHttpRequests  -> authorizeHttpRequests
                        .requestMatchers(base_url + "/auth/login").permitAll()
+                       .requestMatchers(base_url + "/auth/refresh").permitAll()
                        .requestMatchers(base_url + "/auth/register").permitAll()
                                .requestMatchers( "/h2-console/**").permitAll()
                                .anyRequest().authenticated()
@@ -40,7 +39,6 @@ public class SecurityConfiguration {
                        .authenticationEntryPoint(customBearerAuthenticationEntryPoint)
                        .accessDeniedHandler(customAccessDeniedHandler)
                )
-               .addFilterAfter(jwtCacheValidationFilter, BearerTokenAuthenticationFilter.class)
                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
                .cors(AbstractHttpConfigurer::disable)
                .csrf(AbstractHttpConfigurer::disable)
