@@ -133,6 +133,7 @@ public class TaskControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", accessToken)
                         .accept(MediaType.APPLICATION_JSON))
+
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(201))

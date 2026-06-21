@@ -27,7 +27,6 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 
 @Configuration
-
 public class BeansConfig {
 
     private final RSAPublicKey rsaPublicKey;

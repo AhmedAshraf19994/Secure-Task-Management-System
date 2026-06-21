@@ -15,6 +15,12 @@ api:
     base-url: "/api/v1"
 
 app:
+  security:
+    jwt-issuer: self
+    jwt-expiration: 15m # 15 minutes
+    refresh-token-expiration: 7d # 7 days
+    refresh-token-hmac-secret: "${REFRESH_TOKEN_HMAC_SECRET}" # Required
+
   email:
     from: no-reply@task-management.com
 
